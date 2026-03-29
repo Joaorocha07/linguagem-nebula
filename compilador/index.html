@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula IDE - Compilador Online</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>NEBULA</h1>
+                    <span>IDE Online</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="loadExample()">
+                    <i class="fas fa-folder-open"></i> Exemplos
+                </button>
+                <button class="btn btn-primary" onclick="runCode()">
+                    <i class="fas fa-play"></i> Executar
+                </button>
+                <button class="btn btn-secondary" onclick="clearAll()">
+                    <i class="fas fa-trash"></i> Limpar
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-book"></i> Documentação</h3>
+                    <div class="doc-item" onclick="showDoc('variables')">
+                        <i class="fas fa-cube"></i> Variáveis
+                    </div>
+                    <div class="doc-item" onclick="showDoc('operators')">
+                        <i class="fas fa-calculator"></i> Operadores
+                    </div>
+                    <div class="doc-item" onclick="showDoc('control')">
+                        <i class="fas fa-code-branch"></i> Controle
+                    </div>
+                    <div class="doc-item" onclick="showDoc('io')">
+                        <i class="fas fa-terminal"></i> Entrada/Saída
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-flask"></i> Exemplos</h3>
+                    <div class="example-item" onclick="loadExampleCode('hello')">
+                        👋 Olá Mundo
+                    </div>
+                    <div class="example-item" onclick="loadExampleCode('math')">
+                        🔢 Matemática
+                    </div>
+                    <div class="example-item" onclick="loadExampleCode('loop')">
+                        🔄 Loop While
+                    </div>
+                    <div class="example-item" onclick="loadExampleCode('conditional')">
+                        🎯 Condicional
+                    </div>
+                    <div class="example-item" onclick="loadExampleCode('complex')">
+                        🚀 Programa Completo
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Editor Area -->
+            <div class="editor-container">
+                <!-- Code Editor -->
+                <div class="editor-wrapper">
+                    <div class="editor-header">
+                        <div class="file-tabs">
+                            <div class="tab active">
+                                <i class="fas fa-file-code"></i> main.neb
+                                <span class="unsaved">●</span>
+                            </div>
+                        </div>
+                        <div class="editor-actions">
+                            <span class="cursor-position">Ln 1, Col 1</span>
+                            <button class="icon-btn" title="Copiar código" onclick="copyCode()">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="editor-body">
+                        <div class="line-numbers" id="lineNumbers">1</div>
+                        <textarea 
+                            id="codeEditor" 
+                            class="code-editor" 
+                            spellcheck="false"
+                            placeholder="// Escreva seu código Nebula aqui..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- Bottom Panel -->
+                <div class="bottom-panel">
+                    <div class="panel-tabs">
+                        <button class="panel-tab active" onclick="switchPanel('console')">
+                            <i class="fas fa-terminal"></i> Console
+                        </button>
+                        <button class="panel-tab" onclick="switchPanel('tokens')">
+                            <i class="fas fa-list"></i> Tokens
+                        </button>
+                        <button class="panel-tab" onclick="switchPanel('ast')">
+                            <i class="fas fa-sitemap"></i> AST
+                        </button>
+                    </div>
+
+                    <div class="panel-content">
+                        <div id="consolePanel" class="panel active">
+                            <div class="console-output" id="consoleOutput">
+                                <div class="console-welcome">
+                                    <i class="fas fa-rocket"></i>
+                                    <p>Bem-vindo ao Nebula IDE!</p>
+                                    <p class="hint">Escreva seu código e clique em "Executar" para começar.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tokensPanel" class="panel">
+                            <div class="tokens-output" id="tokensOutput">
+                                <p class="empty-state">Execute o código para ver os tokens gerados.</p>
+                            </div>
+                        </div>
+
+                        <div id="astPanel" class="panel">
+                            <div class="ast-output" id="astOutput">
+                                <p class="empty-state">Execute o código para ver a AST.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <span class="status-item">
+                    <i class="fas fa-check-circle"></i> Pronto
+                </span>
+                <span class="status-item" id="tokenCount">
+                    <i class="fas fa-coins"></i> 0 tokens
+                </span>
+            </div>
+            <div class="status-right">
+                <span class="status-item">
+                    <i class="fas fa-code"></i> Nebula v1.0
+                </span>
+                <span class="status-item">
+                    <i class="fas fa-heart"></i> Unitri
+                </span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Documentation Modal -->
+    <div id="docModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="docTitle">Documentação</h2>
+                <button class="close-btn" onclick="closeDoc()">&times;</button>
+            </div>
+            <div class="modal-body" id="docContent">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="nebula_compiler.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,780 @@
+/* ============================================
+   NEBULA IDE - CSS Theme
+   Tema Dark Moderno (VS Code Inspired)
+   ============================================ */
+
+/* CSS Variables - Color Palette */
+:root {
+    /* Core Colors */
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --bg-quaternary: #3e3e42;
+
+    /* Accent Colors */
+    --accent-blue: #007acc;
+    --accent-blue-hover: #1177bb;
+    --accent-cyan: #4ec9b0;
+    --accent-green: #6a9955;
+    --accent-yellow: #dcdcaa;
+    --accent-orange: #ce9178;
+    --accent-purple: #c586c0;
+    --accent-red: #f14c4c;
+
+    /* Text Colors */
+    --text-primary: #cccccc;
+    --text-secondary: #858585;
+    --text-bright: #ffffff;
+    --text-muted: #6e6e6e;
+
+    /* Border & Shadow */
+    --border-color: #3e3e42;
+    --border-light: #505050;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    /* Status Colors */
+    --success: #89d185;
+    --warning: #cca700;
+    --error: #f14c4c;
+    --info: #3794ff;
+
+    /* Syntax Highlighting */
+    --syntax-keyword: #569cd6;
+    --syntax-string: #ce9178;
+    --syntax-number: #b5cea8;
+    --syntax-comment: #6a9955;
+    --syntax-function: #dcdcaa;
+    --syntax-variable: #9cdcfe;
+    --syntax-operator: #d4d4d4;
+
+    /* Spacing */
+    --header-height: 50px;
+    --sidebar-width: 260px;
+    --status-height: 24px;
+    --panel-height: 200px;
+}
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-quaternary);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-light);
+}
+
+::-webkit-scrollbar-corner {
+    background: var(--bg-secondary);
+}
+
+/* ============================================
+   APP CONTAINER
+   ============================================ */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.header {
+    height: var(--header-height);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.logo-text h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 0.5px;
+}
+
+.logo-text span {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-blue-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--bg-quaternary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--border-light);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background: var(--bg-quaternary);
+    color: var(--text-bright);
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-section h3 {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.doc-item, .example-item {
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    color: var(--text-primary);
+}
+
+.doc-item:hover, .example-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-bright);
+}
+
+.doc-item i {
+    color: var(--accent-blue);
+    width: 16px;
+}
+
+/* ============================================
+   EDITOR CONTAINER
+   ============================================ */
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+    overflow: hidden;
+}
+
+/* Editor Wrapper */
+.editor-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.editor-header {
+    height: 36px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+}
+
+.file-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.tab {
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
+    border-radius: 4px 4px 0 0;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    color: var(--text-secondary);
+}
+
+.tab.active {
+    background: var(--bg-primary);
+    color: var(--text-bright);
+    border-top: 2px solid var(--accent-blue);
+}
+
+.tab .unsaved {
+    color: var(--accent-blue);
+    font-size: 8px;
+}
+
+.editor-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cursor-position {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: 'Fira Code', monospace;
+}
+
+/* Editor Body */
+.editor-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+.line-numbers {
+    width: 50px;
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
+    padding: 12px 8px;
+    text-align: right;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    user-select: none;
+    overflow: hidden;
+}
+
+.code-editor {
+    flex: 1;
+    background: var(--bg-primary);
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    resize: none;
+    tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+}
+
+.code-editor::placeholder {
+    color: var(--text-muted);
+}
+
+.code-editor:focus {
+    background: var(--bg-primary);
+}
+
+/* Selection */
+::selection {
+    background: var(--accent-blue);
+    color: white;
+}
+
+/* ============================================
+   BOTTOM PANEL
+   ============================================ */
+.bottom-panel {
+    height: var(--panel-height);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-tabs {
+    display: flex;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.panel-tab {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.panel-tab:hover {
+    color: var(--text-bright);
+    background: var(--bg-quaternary);
+}
+
+.panel-tab.active {
+    color: var(--text-bright);
+    background: var(--bg-secondary);
+    border-bottom-color: var(--accent-blue);
+}
+
+.panel-content {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+}
+
+.panel {
+    display: none;
+    height: 100%;
+    overflow: auto;
+}
+
+.panel.active {
+    display: block;
+}
+
+/* Console Output */
+.console-output {
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.console-welcome {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.console-welcome i {
+    font-size: 48px;
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+    display: block;
+}
+
+.console-welcome p {
+    margin: 8px 0;
+}
+
+.console-welcome .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.console-line {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.console-line.output {
+    color: var(--text-primary);
+}
+
+.console-line.error {
+    color: var(--error);
+}
+
+.console-line.success {
+    color: var(--success);
+}
+
+.console-line.info {
+    color: var(--info);
+}
+
+.console-prompt {
+    color: var(--accent-green);
+    margin-right: 8px;
+}
+
+/* Tokens Output */
+.tokens-output, .ast-output {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+}
+
+.token-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.token-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.token-type {
+    color: var(--syntax-keyword);
+    min-width: 120px;
+}
+
+.token-value {
+    color: var(--syntax-string);
+}
+
+.token-pos {
+    color: var(--text-muted);
+    margin-left: auto;
+    font-size: 11px;
+}
+
+/* AST Tree */
+.ast-tree {
+    padding-left: 20px;
+}
+
+.ast-node {
+    margin: 4px 0;
+}
+
+.ast-node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.ast-node-header:hover {
+    background: var(--bg-tertiary);
+}
+
+.ast-node-type {
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
+.ast-node-value {
+    color: var(--syntax-string);
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px;
+    font-style: italic;
+}
+
+/* ============================================
+   STATUS BAR
+   ============================================ */
+.status-bar {
+    height: var(--status-height);
+    background: var(--accent-blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-size: 12px;
+}
+
+.status-left, .status-right {
+    display: flex;
+    gap: 16px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ============================================
+   MODAL
+   ============================================ */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    color: var(--text-bright);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: var(--bg-quaternary);
+    color: var(--text-bright);
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+/* Documentation Content */
+.doc-section {
+    margin-bottom: 20px;
+}
+
+.doc-section h3 {
+    color: var(--accent-cyan);
+    margin-bottom: 12px;
+    font-size: 16px;
+}
+
+.doc-section p {
+    line-height: 1.6;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.doc-section code {
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--accent-yellow);
+}
+
+.doc-section pre {
+    background: var(--bg-tertiary);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.doc-section pre code {
+    background: none;
+    padding: 0;
+    display: block;
+    line-height: 1.5;
+}
+
+.keyword-tag {
+    display: inline-block;
+    background: var(--bg-quaternary);
+    color: var(--syntax-keyword);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    margin: 2px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute;
+        left: -100%;
+        z-index: 50;
+        transition: left 0.3s;
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    .header-actions .btn span {
+        display: none;
+    }
+}
+
+/* Syntax Highlighting Classes for Code Display */
+.syntax-keyword { color: var(--syntax-keyword); }
+.syntax-string { color: var(--syntax-string); }
+.syntax-number { color: var(--syntax-number); }
+.syntax-comment { color: var(--syntax-comment); }
+.syntax-function { color: var(--syntax-function); }
+.syntax-variable { color: var(--syntax-variable); }
+.syntax-operator { color: var(--syntax-operator); }
