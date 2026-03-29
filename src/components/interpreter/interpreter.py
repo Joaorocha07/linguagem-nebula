@@ -1,0 +1,158 @@
+"""
+Interpretador para a linguagem Nebula.
+Executa a AST gerada pelo parser.
+"""
+
+from typing import Any, Dict, List
+from src.components.lexer.tokens import TipoToken
+from src.components.nebula_ast.nodes import *
+
+
+class ErroExecucao(Exception):
+    """Exceção para erros em tempo de execução."""
+    pass
+
+
+class Interpretador:
+    """Interpretador que executa a AST."""
+
+    def __init__(self):
+        self.variaveis: Dict[str, Any] = {}
+        self.escopos: List[Dict[str, Any]] = [self.variaveis]
+
+    def executar(self, node: ASTNode) -> Any:
+        """Método principal de execução - dispacha para o método específico."""
+        method_name = f'_executar_{type(node).__name__}'
+        method = getattr(self, method_name, self._executar_generico)
+        return method(node)
+
+    def _executar_generico(self, node: ASTNode):
+        raise ErroExecucao(f"Tipo de nó não suportado: {type(node)}")
+
+    def _executar_Programa(self, node: Programa):
+        resultado = None
+        for stmt in node.statements:
+            resultado = self.executar(stmt)
+        return resultado
+
+    def _executar_Numero(self, node: Numero):
+        return node.valor
+
+    def _executar_String(self, node: String):
+        return node.valor
+
+    def _executar_Booleano(self, node: Booleano):
+        return node.valor
+
+    def _executar_Variavel(self, node: Variavel):
+        for escopo in reversed(self.escopos):
+            if node.nome in escopo:
+                return escopo[node.nome]
+        raise ErroExecucao(f"Variável '{node.nome}' não declarada")
+
+    def _executar_Declaracao(self, node: Declaracao):
+        valor = None
+        if node.valor:
+            valor = self.executar(node.valor)
+        self.escopos[-1][node.nome] = valor
+        return valor
+
+    def _executar_Atribuicao(self, node: Atribuicao):
+        valor = self.executar(node.valor)
+        for escopo in reversed(self.escopos):
+            if node.nome in escopo:
+                escopo[node.nome] = valor
+                return valor
+        self.escopos[-1][node.nome] = valor
+        return valor
+
+    def _executar_BinOp(self, node: BinOp):
+        esq = self.executar(node.esquerda)
+        dir_val = self.executar(node.direita)
+        op = node.operador.tipo
+
+        if op == TipoToken.SOMA:
+            if isinstance(esq, str) or isinstance(dir_val, str):
+                return str(esq) + str(dir_val)
+            return esq + dir_val
+        elif op == TipoToken.SUBTRACAO:
+            return esq - dir_val
+        elif op == TipoToken.MULTIPLICACAO:
+            return esq * dir_val
+        elif op == TipoToken.DIVISAO:
+            if dir_val == 0:
+                raise ErroExecucao("Divisão por zero")
+            return esq / dir_val
+        elif op == TipoToken.MODULO:
+            return esq % dir_val
+        elif op == TipoToken.POTENCIA:
+            return esq ** dir_val
+        elif op == TipoToken.IGUAL:
+            return esq == dir_val
+        elif op == TipoToken.DIFERENTE:
+            return esq != dir_val
+        elif op == TipoToken.MENOR:
+            return esq < dir_val
+        elif op == TipoToken.MENOR_IGUAL:
+            return esq <= dir_val
+        elif op == TipoToken.MAIOR:
+            return esq > dir_val
+        elif op == TipoToken.MAIOR_IGUAL:
+            return esq >= dir_val
+        elif op == TipoToken.E_LOGICO:
+            return esq and dir_val
+        elif op == TipoToken.OU_LOGICO:
+            return esq or dir_val
+
+        raise ErroExecucao(f"Operador desconhecido: {op}")
+
+    def _executar_UnaryOp(self, node: UnaryOp):
+        operando = self.executar(node.operando)
+        op = node.operador.tipo
+
+        if op == TipoToken.NAO_LOGICO:
+            return not operando
+        elif op == TipoToken.SUBTRACAO:
+            return -operando
+
+        raise ErroExecucao(f"Operador unário desconhecido: {op}")
+
+    def _executar_Se(self, node: Se):
+        condicao = self.executar(node.condicao)
+
+        if condicao:
+            self.escopos.append({})
+            try:
+                resultado = None
+                for stmt in node.entao:
+                    resultado = self.executar(stmt)
+                return resultado
+            finally:
+                self.escopos.pop()
+        elif node.senao:
+            self.escopos.append({})
+            try:
+                resultado = None
+                for stmt in node.senao:
+                    resultado = self.executar(stmt)
+                return resultado
+            finally:
+                self.escopos.pop()
+
+        return None
+
+    def _executar_Enquanto(self, node: Enquanto):
+        resultado = None
+        while self.executar(node.condicao):
+            self.escopos.append({})
+            try:
+                for stmt in node.corpo:
+                    resultado = self.executar(stmt)
+            finally:
+                self.escopos.pop()
+        return resultado
+
+    def _executar_Exibir(self, node: Exibir):
+        valor = self.executar(node.expressao)
+        print(valor)
+        return valor
