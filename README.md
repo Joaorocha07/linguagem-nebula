@@ -6,6 +6,14 @@ Linguagem de programação didática para a disciplina de Construção de Interp
 
 ```
 LINGUAGEM-NEBULA/
+├── compilador/
+│   ├── app.js
+│   ├── index.html
+│   ├── nebula_compiler.js
+│   ├── README.md
+│   ├── style.css
+│   └── test.html
+│
 ├── docs/
 │   ├── ESPECIFICACAO_NEBULA.pdf
 │   ├── INSTRUCOES_EXECUCAO.pdf
