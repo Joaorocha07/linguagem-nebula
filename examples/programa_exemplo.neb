@@ -1,0 +1,103 @@
+
+// ============================================================
+// ARQUIVOS DE TESTE PARA A LINGUAGEM NEBULA
+// ============================================================
+
+// ----------- ARQUIVO 5: programa_exemplo.neb -----------
+// Programa exemplo não-trivial demonstrando a linguagem
+
+// ============================================
+// PROGRAMA EXEMPLO: CALCULADORA DE ESTATÍSTICAS
+// ============================================
+// Demonstra recursos da linguagem Nebula:
+// - Declaração de variáveis com 'criar'
+// - Operadores aritméticos com precedência
+// - Condicionais com 'se/senao' e blocos 'inicio/fim'
+// - Operadores lógicos &&, ||, !
+// - Comentários // e /* */
+// - Saída com 'exibir'
+
+/*
+ * Este programa calcula estatísticas básicas
+ * (média, variância, desvio padrão)
+ * de um conjunto de 5 valores
+ */
+
+// Valores de entrada
+criar v1 = 23.5;
+criar v2 = 17.8;
+criar v3 = 31.2;
+criar v4 = 25.0;
+criar v5 = 19.5;
+
+// Cálculo da média
+criar soma = v1 + v2 + v3 + v4 + v5;
+criar media = soma / 5;
+exibir("Media:");
+exibir(media);
+
+// Cálculo da variância (soma dos quadrados das diferenças)
+criar diff1 = v1 - media;
+criar diff2 = v2 - media;
+criar diff3 = v3 - media;
+criar diff4 = v4 - media;
+criar diff5 = v5 - media;
+
+criar quad1 = diff1 ^ 2;
+criar quad2 = diff2 ^ 2;
+criar quad3 = diff3 ^ 2;
+criar quad4 = diff4 ^ 2;
+criar quad5 = diff5 ^ 2;
+
+criar somaQuadrados = quad1 + quad2 + quad3 + quad4 + quad5;
+criar variancia = somaQuadrados / 5;
+exibir("Variancia:");
+exibir(variancia);
+
+// Classificação baseada na média
+se (media >= 25.0 && media <= 30.0) inicio
+    exibir("Media alta");
+fim
+senao inicio
+    se (media >= 15.0 && media < 25.0) inicio
+        exibir("Media normal");
+    fim
+    senao inicio
+        se (media < 15.0) inicio
+            exibir("Media baixa");
+        fim
+        senao inicio
+            exibir("Media muito alta");
+        fim
+    fim
+fim
+
+// Verificação de consistência usando operadores lógicos
+criar consistente = (v1 > 0) && (v2 > 0) && (v3 > 0) && (v4 > 0) && (v5 > 0);
+se (!consistente) inicio
+    exibir("Aviso: valores negativos detectados");
+fim
+senao inicio
+    exibir("Todos os valores são positivos");
+fim
+
+// Cálculo adicional: coeficiente de variação (CV)
+criar desvioPadrao = variancia ^ 0.5;
+criar cv = (desvioPadrao / media) * 100;
+exibir("Coeficiente de Variacao (%):");
+exibir(cv);
+
+// Interpretação do CV
+se (cv < 15.0) inicio
+    exibir("Baixa dispersao (CV < 15%)");
+fim
+senao inicio
+    se (cv >= 15.0 && cv <= 30.0) inicio
+        exibir("Media dispersao");
+    fim
+    senao inicio
+        exibir("Alta dispersao (CV > 30%)");
+    fim
+fim
+
+exibir("Programa finalizado com sucesso!");

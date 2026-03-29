@@ -1,0 +1,67 @@
+// ----------- ARQUIVO 2: teste_condicional.neb -----------
+// Testa estruturas condicionais if/else (se/senao)
+
+// ============================================
+// TESTE 2: ESTRUTURAS CONDICIONAIS
+// ============================================
+// Demonstra uso de se/senao com blocos inicio/fim
+// Demonstra condições compostas com operadores lógicos
+
+criar idade = 25;
+criar nome = "Maria";
+
+// Condicional simples
+se (idade >= 18) inicio
+    exibir("Maior de idade");
+fim
+
+// Condicional com senao
+se (idade < 13) inicio
+    exibir("Criança");
+fim
+senao inicio
+    se (idade < 20) inicio
+        exibir("Adolescente");
+    fim
+    senao inicio
+        exibir("Adulto");
+    fim
+fim
+
+// Condicional com operadores lógicos
+criar temCarteira = verdadeiro;
+criar pontos = 15;
+
+se (temCarteira && pontos > 20) inicio
+    exibir("Habilitação suspensa");
+fim
+senao inicio
+    se (temCarteira && pontos <= 20) inicio
+        exibir("Habilitação ativa");
+    fim
+    senao inicio
+        exibir("Sem habilitação");
+    fim
+fim
+
+// Condicional aninhada com comparações complexas
+criar nota1 = 7.5;
+criar nota2 = 8.0;
+criar media = (nota1 + nota2) / 2;
+
+se (media >= 7.0 && media < 9.0) inicio
+    exibir("Aprovado");
+fim
+senao inicio
+    se (media >= 9.0) inicio
+        exibir("Aprovado com mérito");
+    fim
+    senao inicio
+        se (media >= 5.0) inicio
+            exibir("Recuperação");
+        fim
+        senao inicio
+            exibir("Reprovado");
+        fim
+    fim
+fim

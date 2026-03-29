@@ -1,0 +1,30 @@
+// ----------- ARQUIVO 4: teste_invalido.neb -----------
+// Testa erros que não podem ser recuperados ou casos inválidos
+
+// ============================================
+// TESTE 4: CÓDIGO INVÁLIDO (ERROS NÃO RECUPERÁVEIS)
+// ============================================
+// Este arquivo contém erros que devem ser detectados
+// mas pode não executar completamente
+
+// Erro léxico: caractere inválido
+criar valor = 10 @ 5;
+
+// Erro léxico: string não fechada
+criar texto = "Isso é um teste;
+
+// Erro sintático grave: palavra-chave desconhecida
+seja x = 10;
+
+// Erro sintático: estrutura completamente malformada
+inicio
+    criar a = 5
+    se (a > 3)
+        exibir("OK")
+    senao
+        exibir("NOK")
+fim
+
+// Código válido que não será alcançado devido aos erros anteriores
+criar final = 100;
+exibir(final);

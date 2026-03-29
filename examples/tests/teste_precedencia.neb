@@ -1,0 +1,45 @@
+// ----------- ARQUIVO 1: teste_precedencia.neb -----------
+// Testa precedência de operadores e expressões aritméticas
+
+// ============================================
+// TESTE 1: PRECEDÊNCIA DE OPERADORES
+// ============================================
+// Demonstra que * e / têm precedência sobre + e -
+// Demonstra que ^ é associativo à direita
+// Demonstra precedência de operadores lógicos
+
+criar a = 2;
+criar b = 3;
+criar c = 4;
+
+// Precedência aritmética: 2 + (3 * 4) = 14 (não 20)
+criar resultado1 = a + b * c;
+exibir(resultado1);
+
+// Uso de parênteses para alterar precedência: (2 + 3) * 4 = 20
+criar resultado2 = (a + b) * c;
+exibir(resultado2);
+
+// Precedência com divisão e módulo: 10 / 2 + 3 % 2 = 5 + 1 = 6
+criar resultado3 = 10 / 2 + 3 % 2;
+exibir(resultado3);
+
+// Potenciação associativa à direita: 2 ^ 3 ^ 2 = 2 ^ 9 = 512 (não 64)
+criar resultado4 = 2 ^ 3 ^ 2;
+exibir(resultado4);
+
+// Precedência de operadores relacionais: comparações antes de igualdade
+criar resultado5 = 5 < 3 == falso;
+exibir(resultado5);
+
+// Precedência lógica: && antes de ||
+// verdadeiro || falso && falso = verdadeiro || (falso && falso) = verdadeiro
+criar x = verdadeiro;
+criar y = falso;
+criar resultado6 = x || y && y;
+exibir(resultado6);
+
+// Teste de negação lógica com precedência: ! tem maior precedência
+// !verdadeiro && falso = falso && falso = falso
+criar resultado7 = !x && y;
+exibir(resultado7);

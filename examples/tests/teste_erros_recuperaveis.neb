@@ -1,0 +1,33 @@
+// ----------- ARQUIVO 3: teste_erros_recuperaveis.neb -----------
+// Testa recuperação de erros sintáticos
+
+// ============================================
+// TESTE 3: RECUPERAÇÃO DE ERROS
+// ============================================
+// Demonstra que o compilador recupera de erros
+// e continua analisando o restante do programa
+
+criar x = 10;
+exibir(x);
+
+// Erro 1: falta ponto e vírgula (recuperável)
+criar y = 20
+exibir(y);
+
+// Erro 2: condicional sem parênteses (recuperável)
+se x > 5 inicio
+    exibir("X é maior que 5");
+fim
+
+// Erro 3: bloco não fechado (recuperável)
+criar z = 30;
+se (z > 25) inicio
+    exibir("Z é maior que 25");
+// falta 'fim' aqui - o parser tenta sincronizar
+
+criar w = 40;
+exibir(w);
+
+// Código válido após erros - deve ser executado
+criar resultado = x + y + z + w;
+exibir(resultado);
