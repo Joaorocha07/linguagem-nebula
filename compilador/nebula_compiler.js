@@ -1,27 +1,118 @@
 /**
- * NEBULA LANGUAGE COMPILER
- * Compilador/Interpretador completo em JavaScript
+ * NEBULA LANGUAGE COMPILER - Versão Web com SQLite
+ * Compilador/Interpretador completo em JavaScript com suporte a:
+ * - Comando nebula (consulta planetas)
+ * - Comando ler (input do usuário) - AGORA COM PROMISE
+ * - Banco de dados SQLite dos planetas
  */
 
-// Token Types
+// ============================================
+// SQL.js - Inicialização do SQLite
+// ============================================
+let SQL = null;
+let nebulaDB = null;
+
+// Inicializar banco de dados Nebula
+async function initNebulaDB() {
+    if (!SQL) {
+        // Carregar sql.js dinamicamente se não estiver disponível
+        if (typeof initSqlJs === 'undefined') {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js');
+        }
+        SQL = await initSqlJs({
+            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+        });
+    }
+    
+    if (!nebulaDB) {
+        nebulaDB = createNebulaDatabase();
+    }
+    return nebulaDB;
+}
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+// Criar banco de dados com planetas
+function createNebulaDatabase() {
+    const db = new SQL.Database();
+    
+    // Criar tabela
+    db.run(`
+        CREATE TABLE planetas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL UNIQUE,
+            tipo TEXT NOT NULL,
+            distancia_sol REAL NOT NULL,
+            diametro REAL NOT NULL,
+            massa TEXT NOT NULL,
+            luas INTEGER NOT NULL,
+            ano_orbital REAL NOT NULL,
+            temperatura_media REAL NOT NULL,
+            observacao TEXT NOT NULL
+        )
+    `);
+    
+    // Inserir planetas
+    const planetas = [
+        ["Mercurio", "Planeta Rochoso", 57.9, 4879, "3.285 × 10^23 kg", 0, 88.0, 167, "O menor planeta do Sistema Solar e o mais proximo do Sol."],
+        ["Venus", "Planeta Rochoso", 108.2, 12104, "4.867 × 10^24 kg", 0, 225.0, 464, "O planeta mais quente do Sistema Solar, mais que Mercurio!"],
+        ["Terra", "Planeta Rochoso", 149.6, 12742, "5.972 × 10^24 kg", 1, 365.25, 15, "Nosso lar! O unico planeta conhecido a abrigar vida."],
+        ["Marte", "Planeta Rochoso", 227.9, 6779, "6.39 × 10^23 kg", 2, 687.0, -65, "O Planeta Vermelho, devido ao oxido de ferro em sua superficie."],
+        ["Jupiter", "Planeta Gasoso", 778.5, 139820, "1.898 × 10^27 kg", 95, 4333.0, -110, "O maior planeta do Sistema Solar."],
+        ["Saturno", "Planeta Gasoso", 1434.0, 116460, "5.683 × 10^26 kg", 146, 10759.0, -140, "Famoso por seus belos aneis feitos de gelo e rocha."],
+        ["Urano", "Planeta Gasoso", 2871.0, 50724, "8.681 × 10^25 kg", 27, 30687.0, -195, "O planeta mais frio do Sistema Solar."],
+        ["Netuno", "Planeta Gasoso", 4495.0, 49244, "1.024 × 10^26 kg", 14, 60190.0, -200, "O planeta mais distante do Sol e o mais ventoso."]
+    ];
+    
+    const stmt = db.prepare(`
+        INSERT INTO planetas 
+        (nome, tipo, distancia_sol, diametro, massa, luas, ano_orbital, temperatura_media, observacao)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    planetas.forEach(p => stmt.run(p));
+    stmt.free();
+    
+    return db;
+}
+
+// ============================================
+// TOKEN TYPES
+// ============================================
 const TipoToken = {
+    // Palavras-chave
     CRIAR: 'CRIAR', SE: 'SE', SENAO: 'SENAO', ENQUANTO: 'ENQUANTO',
     DEFINIR: 'DEFINIR', RETORNAR: 'RETORNAR', EXIBIR: 'EXIBIR',
+    LER: 'LER',
     INICIO: 'INICIO', FIM: 'FIM',
+    NEBULA: 'NEBULA',
+    // Tipos
     NUMERO_INTEIRO: 'NUMERO_INTEIRO', NUMERO_REAL: 'NUMERO_REAL',
     STRING: 'STRING', BOOLEANO: 'BOOLEANO', IDENTIFICADOR: 'IDENTIFICADOR',
+    // Operadores
     SOMA: 'SOMA', SUBTRACAO: 'SUBTRACAO', MULTIPLICACAO: 'MULTIPLICACAO',
     DIVISAO: 'DIVISAO', MODULO: 'MODULO', POTENCIA: 'POTENCIA',
     IGUAL: 'IGUAL', DIFERENTE: 'DIFERENTE', MENOR: 'MENOR',
     MENOR_IGUAL: 'MENOR_IGUAL', MAIOR: 'MAIOR', MAIOR_IGUAL: 'MAIOR_IGUAL',
     E_LOGICO: 'E_LOGICO', OU_LOGICO: 'OU_LOGICO', NAO_LOGICO: 'NAO_LOGICO',
+    // Delimitadores
     ATRIBUICAO: 'ATRIBUICAO', PONTO_VIRGULA: 'PONTO_VIRGULA',
     VIRGULA: 'VIRGULA', DOIS_PONTOS: 'DOIS_PONTOS',
     ABRE_PARENTESES: 'ABRE_PARENTESES', FECHA_PARENTESES: 'FECHA_PARENTESES',
     EOF: 'EOF'
 };
 
-// Lexer
+// ============================================
+// LEXER
+// ============================================
 class AnalisadorLexico {
     constructor(codigo) {
         this.codigo = codigo;
@@ -33,7 +124,9 @@ class AnalisadorLexico {
             'criar': TipoToken.CRIAR, 'se': TipoToken.SE, 'senao': TipoToken.SENAO,
             'enquanto': TipoToken.ENQUANTO, 'definir': TipoToken.DEFINIR,
             'retornar': TipoToken.RETORNAR, 'exibir': TipoToken.EXIBIR,
+            'ler': TipoToken.LER,
             'inicio': TipoToken.INICIO, 'fim': TipoToken.FIM,
+            'nebula': TipoToken.NEBULA,
             'verdadeiro': { tipo: TipoToken.BOOLEANO, valor: true },
             'falso': { tipo: TipoToken.BOOLEANO, valor: false }
         };
@@ -169,8 +262,11 @@ class AnalisadorLexico {
             }
 
             const doisChars = char + (this.proximoCaractere() || '');
-            const ops2 = { '==': TipoToken.IGUAL, '!=': TipoToken.DIFERENTE, '<=': TipoToken.MENOR_IGUAL,
-                '>=': TipoToken.MAIOR_IGUAL, '&&': TipoToken.E_LOGICO, '||': TipoToken.OU_LOGICO };
+            const ops2 = { 
+                '==': TipoToken.IGUAL, '!=': TipoToken.DIFERENTE, 
+                '<=': TipoToken.MENOR_IGUAL, '>=': TipoToken.MAIOR_IGUAL, 
+                '&&': TipoToken.E_LOGICO, '||': TipoToken.OU_LOGICO 
+            };
 
             if (ops2[doisChars]) {
                 this.tokens.push({ tipo: ops2[doisChars], valor: doisChars, linha, coluna });
@@ -178,11 +274,16 @@ class AnalisadorLexico {
                 continue;
             }
 
-            const ops1 = { '+': TipoToken.SOMA, '-': TipoToken.SUBTRACAO, '*': TipoToken.MULTIPLICACAO,
-                '/': TipoToken.DIVISAO, '%': TipoToken.MODULO, '^': TipoToken.POTENCIA,
-                '<': TipoToken.MENOR, '>': TipoToken.MAIOR, '!': TipoToken.NAO_LOGICO,
-                '=': TipoToken.ATRIBUICAO, ';': TipoToken.PONTO_VIRGULA, ',': TipoToken.VIRGULA,
-                ':': TipoToken.DOIS_PONTOS, '(': TipoToken.ABRE_PARENTESES, ')': TipoToken.FECHA_PARENTESES };
+            const ops1 = { 
+                '+': TipoToken.SOMA, '-': TipoToken.SUBTRACAO, 
+                '*': TipoToken.MULTIPLICACAO, '/': TipoToken.DIVISAO, 
+                '%': TipoToken.MODULO, '^': TipoToken.POTENCIA,
+                '<': TipoToken.MENOR, '>': TipoToken.MAIOR, 
+                '!': TipoToken.NAO_LOGICO, '=': TipoToken.ATRIBUICAO, 
+                ';': TipoToken.PONTO_VIRGULA, ',': TipoToken.VIRGULA,
+                ':': TipoToken.DOIS_PONTOS, '(': TipoToken.ABRE_PARENTESES, 
+                ')': TipoToken.FECHA_PARENTESES 
+            };
 
             if (ops1[char]) {
                 this.tokens.push({ tipo: ops1[char], valor: char, linha, coluna });
@@ -198,7 +299,9 @@ class AnalisadorLexico {
     }
 }
 
-// AST Node
+// ============================================
+// AST NODE
+// ============================================
 class ASTNode {
     constructor(tipo, props = {}) {
         this.tipo = tipo;
@@ -206,7 +309,9 @@ class ASTNode {
     }
 }
 
-// Parser
+// ============================================
+// PARSER
+// ============================================
 class Parser {
     constructor(tokens) {
         this.tokens = tokens;
@@ -250,6 +355,8 @@ class Parser {
             case TipoToken.SE: return this.parseSe();
             case TipoToken.ENQUANTO: return this.parseEnquanto();
             case TipoToken.EXIBIR: return this.parseExibir();
+            case TipoToken.LER: return this.parseLerStatement();
+            case TipoToken.NEBULA: return this.parseNebula();
             case TipoToken.IDENTIFICADOR: return this.parseAtribuicaoOuChamada();
             case TipoToken.INICIO: return this.parseBloco();
             case TipoToken.PONTO_VIRGULA: this.avancar(); return null;
@@ -258,6 +365,60 @@ class Parser {
                 this.esperar(TipoToken.PONTO_VIRGULA);
                 return expr;
         }
+    }
+
+    parseNebula() {
+        this.esperar(TipoToken.NEBULA);
+        this.esperar(TipoToken.EXIBIR);
+        
+        let nomeNode;
+        const token = this.atual();
+        
+        if (token.tipo === TipoToken.STRING) {
+            nomeNode = new ASTNode('String', { valor: token.valor });
+            this.avancar();
+        } else if (token.tipo === TipoToken.IDENTIFICADOR) {
+            nomeNode = new ASTNode('Variavel', { nome: token.valor });
+            this.avancar();
+        } else {
+            throw new Error(`Esperado nome do planeta (string ou variável), encontrado ${token.tipo}`);
+        }
+        
+        this.esperar(TipoToken.PONTO_VIRGULA);
+        return new ASTNode('ConsultaPlaneta', { nome: nomeNode });
+    }
+
+    parseLerStatement() {
+        this.esperar(TipoToken.LER);
+        let mensagem = null;
+        
+        if (this.atual().tipo === TipoToken.ABRE_PARENTESES) {
+            this.esperar(TipoToken.ABRE_PARENTESES);
+            if (this.atual().tipo === TipoToken.STRING) {
+                mensagem = new ASTNode('String', { valor: this.atual().valor });
+                this.avancar();
+            }
+            this.esperar(TipoToken.FECHA_PARENTESES);
+        }
+        
+        this.esperar(TipoToken.PONTO_VIRGULA);
+        return new ASTNode('Ler', { mensagem });
+    }
+
+    parseLerComoExpressao() {
+        this.esperar(TipoToken.LER);
+        let mensagem = null;
+        
+        if (this.atual().tipo === TipoToken.ABRE_PARENTESES) {
+            this.esperar(TipoToken.ABRE_PARENTESES);
+            if (this.atual().tipo === TipoToken.STRING) {
+                mensagem = new ASTNode('String', { valor: this.atual().valor });
+                this.avancar();
+            }
+            this.esperar(TipoToken.FECHA_PARENTESES);
+        }
+        
+        return new ASTNode('Ler', { mensagem });
     }
 
     parseDeclaracao() {
@@ -404,38 +565,63 @@ class Parser {
         const token = this.atual();
         switch (token.tipo) {
             case TipoToken.NUMERO_INTEIRO:
-            case TipoToken.NUMERO_REAL: this.avancar(); return new ASTNode('Numero', { valor: token.valor });
-            case TipoToken.STRING: this.avancar(); return new ASTNode('String', { valor: token.valor });
-            case TipoToken.BOOLEANO: this.avancar(); return new ASTNode('Booleano', { valor: token.valor });
-            case TipoToken.IDENTIFICADOR: this.avancar(); return new ASTNode('Variavel', { nome: token.valor });
+            case TipoToken.NUMERO_REAL: 
+                this.avancar(); 
+                return new ASTNode('Numero', { valor: token.valor });
+            case TipoToken.STRING: 
+                this.avancar(); 
+                return new ASTNode('String', { valor: token.valor });
+            case TipoToken.BOOLEANO: 
+                this.avancar(); 
+                return new ASTNode('Booleano', { valor: token.valor });
+            case TipoToken.IDENTIFICADOR: 
+                this.avancar(); 
+                return new ASTNode('Variavel', { nome: token.valor });
             case TipoToken.ABRE_PARENTESES:
                 this.avancar();
                 const node = this.parseExpressao();
                 this.esperar(TipoToken.FECHA_PARENTESES);
                 return node;
+            case TipoToken.LER:
+                return this.parseLerComoExpressao();
             default:
                 throw new Error(`Expressão inesperada: ${token.tipo} na linha ${token.linha}`);
         }
     }
 }
 
-// Interpreter
+// ============================================
+// INTERPRETER (AGORA COM ASYNC/AWAIT)
+// ============================================
 class Interpretador {
-    constructor(outputCallback) {
+    constructor(outputCallback, inputCallback) {
         this.variaveis = {};
         this.escopos = [this.variaveis];
         this.output = outputCallback || console.log;
+        this.input = inputCallback || this.defaultInput.bind(this);
+        this.db = null;
     }
 
-    executar(node) {
+    async init() {
+        this.db = await initNebulaDB();
+    }
+
+    async defaultInput(mensagem) {
+        if (mensagem) this.output(mensagem);
+        return prompt("> ") || "";
+    }
+
+    async executar(node) {
         const method = `executar${node.tipo}`;
-        if (this[method]) return this[method](node);
+        if (this[method]) return await this[method](node);
         throw new Error(`Tipo não suportado: ${node.tipo}`);
     }
 
-    executarPrograma(node) {
+    async executarPrograma(node) {
         let resultado;
-        for (const stmt of node.statements) resultado = this.executar(stmt);
+        for (const stmt of node.statements) {
+            resultado = await this.executar(stmt);
+        }
         return resultado;
     }
 
@@ -450,14 +636,14 @@ class Interpretador {
         throw new Error(`Variável '${node.nome}' não declarada`);
     }
 
-    executarDeclaracao(node) {
-        const valor = node.valor ? this.executar(node.valor) : null;
+    async executarDeclaracao(node) {
+        const valor = node.valor ? await this.executar(node.valor) : null;
         this.escopos[this.escopos.length - 1][node.nome] = valor;
         return valor;
     }
 
-    executarAtribuicao(node) {
-        const valor = this.executar(node.valor);
+    async executarAtribuicao(node) {
+        const valor = await this.executar(node.valor);
         for (let i = this.escopos.length - 1; i >= 0; i--) {
             if (node.nome in this.escopos[i]) {
                 this.escopos[i][node.nome] = valor;
@@ -468,16 +654,19 @@ class Interpretador {
         return valor;
     }
 
-    executarBinOp(node) {
-        const esq = this.executar(node.esquerda);
-        const dir = this.executar(node.direita);
+    async executarBinOp(node) {
+        const esq = await this.executar(node.esquerda);
+        const dir = await this.executar(node.direita);
         const op = node.operador.tipo;
 
         switch (op) {
-            case TipoToken.SOMA: return (typeof esq === 'string' || typeof dir === 'string') ? String(esq) + String(dir) : esq + dir;
+            case TipoToken.SOMA: 
+                return (typeof esq === 'string' || typeof dir === 'string') ? String(esq) + String(dir) : esq + dir;
             case TipoToken.SUBTRACAO: return esq - dir;
             case TipoToken.MULTIPLICACAO: return esq * dir;
-            case TipoToken.DIVISAO: if (dir === 0) throw new Error('Divisão por zero'); return esq / dir;
+            case TipoToken.DIVISAO: 
+                if (dir === 0) throw new Error('Divisão por zero'); 
+                return esq / dir;
             case TipoToken.MODULO: return esq % dir;
             case TipoToken.POTENCIA: return Math.pow(esq, dir);
             case TipoToken.IGUAL: return esq === dir;
@@ -492,46 +681,99 @@ class Interpretador {
         }
     }
 
-    executarUnaryOp(node) {
-        const operando = this.executar(node.operando);
+    async executarUnaryOp(node) {
+        const operando = await this.executar(node.operando);
         const op = node.operador.tipo;
         if (op === TipoToken.NAO_LOGICO) return !operando;
         if (op === TipoToken.SUBTRACAO) return -operando;
         throw new Error(`Operador unário desconhecido: ${op}`);
     }
 
-    executarSe(node) {
-        if (this.executar(node.condicao)) {
+    async executarSe(node) {
+        if (await this.executar(node.condicao)) {
             this.escopos.push({});
-            try { for (const stmt of node.entao) this.executar(stmt); }
+            try { for (const stmt of node.entao) await this.executar(stmt); }
             finally { this.escopos.pop(); }
         } else if (node.senao) {
             this.escopos.push({});
-            try { for (const stmt of node.senao) this.executar(stmt); }
+            try { for (const stmt of node.senao) await this.executar(stmt); }
             finally { this.escopos.pop(); }
         }
     }
 
-    executarEnquanto(node) {
-        while (this.executar(node.condicao)) {
+    async executarEnquanto(node) {
+        while (await this.executar(node.condicao)) {
             this.escopos.push({});
-            try { for (const stmt of node.corpo) this.executar(stmt); }
+            try { for (const stmt of node.corpo) await this.executar(stmt); }
             finally { this.escopos.pop(); }
         }
     }
 
-    executarExibir(node) {
-        const valor = this.executar(node.expressao);
+    async executarExibir(node) {
+        const valor = await this.executar(node.expressao);
         this.output(valor);
         return valor;
     }
+
+    // COMANDO LER - AGORA ASYNC
+    async executarLer(node) {
+        const mensagem = node.mensagem ? await this.executar(node.mensagem) : null;
+        return await this.input(mensagem);
+    }
+
+    // COMANDO NEBULA
+    async executarConsultaPlaneta(node) {
+        const nomePlaneta = await this.executar(node.nome);
+        
+        if (!this.db) {
+            throw new Error("Banco de dados não inicializado");
+        }
+        
+        const stmt = this.db.prepare(`
+            SELECT nome, tipo, distancia_sol, diametro, massa, 
+                   luas, ano_orbital, temperatura_media, observacao
+            FROM planetas
+            WHERE LOWER(nome) = LOWER(?)
+        `);
+        
+        const resultado = stmt.getAsObject([nomePlaneta]);
+        stmt.free();
+        
+        if (!resultado.nome) {
+            this.output(`❌ Planeta '${nomePlaneta}' não encontrado no banco de dados Nebula.`);
+            this.output("💡 Planetas disponíveis: Mercurio, Venus, Terra, Marte, Jupiter, Saturno, Urano, Netuno");
+            return null;
+        }
+        
+        this.output("");
+        this.output("=".repeat(70));
+        this.output(`  🪐  ${resultado.nome.toUpperCase()}`);
+        this.output("=".repeat(70));
+        this.output(`  📊 Tipo: ${resultado.tipo}`);
+        this.output(`  🌞 Distância do Sol: ${resultado.distancia_sol} milhões de km`);
+        this.output(`  📏 Diâmetro: ${resultado.diametro.toLocaleString()} km`);
+        this.output(`  ⚖️  Massa: ${resultado.massa}`);
+        this.output(`  🌙 Luas: ${resultado.luas}`);
+        this.output(`  🗓️  Ano orbital: ${resultado.ano_orbital} dias terrestres`);
+        this.output(`  🌡️  Temperatura média: ${resultado.temperatura_media}°C`);
+        this.output("-".repeat(70));
+        this.output(`  💡 Observação:`);
+        this.output(`     ${resultado.observacao}`);
+        this.output("=".repeat(70));
+        this.output("");
+        
+        return resultado.nome;
+    }
 }
 
-// Main Compiler Class
+// ============================================
+// MAIN COMPILER CLASS
+// ============================================
 class NebulaCompiler {
     constructor() {
         this.tokens = [];
         this.ast = null;
+        this.interpreter = null;
     }
 
     compile(codigo) {
@@ -547,13 +789,14 @@ class NebulaCompiler {
         return { success: true, tokens: this.tokens, ast: this.ast };
     }
 
-    execute(codigo, outputCallback) {
+    async execute(codigo, outputCallback, inputCallback) {
         const result = this.compile(codigo);
         if (!result.success) return result;
 
         try {
-            const interpreter = new Interpretador(outputCallback);
-            interpreter.executar(this.ast);
+            this.interpreter = new Interpretador(outputCallback, inputCallback);
+            await this.interpreter.init();
+            await this.interpreter.executar(this.ast);
             return { success: true, tokens: this.tokens, ast: this.ast };
         } catch (e) {
             return { success: false, errors: [e.message], stage: 'runtime' };
@@ -563,5 +806,5 @@ class NebulaCompiler {
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { NebulaCompiler, AnalisadorLexico, Parser, Interpretador, TipoToken };
+    module.exports = { NebulaCompiler, AnalisadorLexico, Parser, Interpretador, TipoToken, initNebulaDB };
 }

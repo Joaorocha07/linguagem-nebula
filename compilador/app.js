@@ -1,6 +1,5 @@
 /**
- * NEBULA IDE - Application Logic
- * Interface e interatividade do compilador online
+ * NEBULA IDE - Application Logic com Input Embutido no Console
  */
 
 // Instância do compilador
@@ -13,6 +12,11 @@ const consoleOutput = document.getElementById('consoleOutput');
 const tokensOutput = document.getElementById('tokensOutput');
 const astOutput = document.getElementById('astOutput');
 const tokenCount = document.getElementById('tokenCount');
+
+// Fila de inputs pendentes
+let inputQueue = [];
+let inputResolve = null;
+let isWaitingInput = false;
 
 // Exemplos de código
 const examples = {
@@ -75,6 +79,53 @@ criar nota = 75;
 se (nota >= 60 && nota < 80) inicio
     exibir("Aprovado com nota B");
 fim`,
+
+    input: `// Entrada de dados com ler()
+exibir("=== Cadastro ===");
+
+criar nome = ler("Digite seu nome: ");
+criar idade = ler("Digite sua idade: ");
+
+exibir("");
+exibir("Dados cadastrados:");
+exibir("Nome: " + nome);
+exibir("Idade: " + idade);`,
+
+    planetas: `// ============================================
+// SISTEMA DE CONSULTA ASTRONOMICA NEBULA
+// ============================================
+
+exibir("");
+exibir("╔════════════════════════════════════════════════════════════╗");
+exibir("║     🌌  SISTEMA DE CONSULTA ASTRONOMICA NEBULA  🌌       ║");
+exibir("╚════════════════════════════════════════════════════════════╝");
+exibir("");
+
+// Exibe o menu
+exibir(">>> PLANETAS DISPONIVEIS:");
+exibir("   Mercurio, Venus, Terra, Marte, Jupiter, Saturno, Urano, Netuno");
+exibir("");
+
+// Loop principal do menu
+criar continuar = verdadeiro;
+
+enquanto (continuar) inicio
+    exibir("");
+    criar planeta = ler("Digite o nome do planeta (ou 'sair' para encerrar): ");
+    
+    se (planeta == "sair") inicio
+        continuar = falso;
+        exibir("Encerrando sistema...");
+    fim
+    senao inicio
+        exibir("");
+        exibir(">>> Consultando informacoes sobre " + planeta + "...");
+        nebula exibir planeta;
+    fim
+fim
+
+exibir("");
+exibir("Obrigado por usar o Sistema Nebula!");`,
 
     complex: `/*
  * Programa completo Nebula
@@ -183,9 +234,19 @@ fim</code></pre>
 exibir(variavel);
 exibir(10 + 20);</code></pre>
 
-                <h3>Concatenação</h3>
-                <pre><code>criar msg = "Valor: " + 42;
-exibir(msg);</code></pre>
+                <h3>Entrada (ler)</h3>
+                <pre><code>criar nome = ler("Digite seu nome: ");
+exibir("Olá, " + nome);</code></pre>
+                <p>O input aparece diretamente no console!</p>
+
+                <h3>Consulta Planetas (nebula)</h3>
+                <pre><code>// Consulta direta
+nebula exibir "Terra";
+
+// Com variável
+criar planeta = ler("Qual planeta? ");
+nebula exibir planeta;</code></pre>
+                <p>Planetas disponíveis: Mercurio, Venus, Terra, Marte, Jupiter, Saturno, Urano, Netuno</p>
             </div>
         `
     }
@@ -221,38 +282,157 @@ function updateCursorPosition() {
 codeEditor.addEventListener('click', updateCursorPosition);
 codeEditor.addEventListener('keyup', updateCursorPosition);
 
-// Executar código
-function runCode() {
+// ============================================
+// INPUT EMBUTIDO NO CONSOLE
+// ============================================
+
+// Criar elemento de input no console
+function createConsoleInput(mensagem) {
+    const container = document.createElement('div');
+    container.className = 'console-input-container';
+    container.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border-color);
+        animation: fadeIn 0.3s ease;
+    `;
+
+    // Prompt
+    const prompt = document.createElement('span');
+    prompt.className = 'console-prompt';
+    prompt.style.cssText = `
+        color: var(--accent-green);
+        font-family: 'Fira Code', monospace;
+        white-space: nowrap;
+    `;
+    prompt.textContent = mensagem ? `? ${mensagem}` : '> ';
+
+    // Input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'console-input';
+    input.style.cssText = `
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid var(--accent-blue);
+        color: var(--text-bright);
+        font-family: 'Fira Code', monospace;
+        font-size: 13px;
+        outline: none;
+        flex: 1;
+        padding: 4px 8px;
+        min-width: 100px;
+    `;
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+
+    container.appendChild(prompt);
+    container.appendChild(input);
+
+    return { container, input };
+}
+
+// Callback de input que retorna Promise
+function inputCallback(mensagem) {
+    return new Promise((resolve) => {
+        isWaitingInput = true;
+        inputResolve = resolve;
+
+        // Criar input no console
+        const { container, input } = createConsoleInput(mensagem);
+        consoleOutput.appendChild(container);
+
+        // Focar no input
+        input.focus();
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+
+        // Handler de submit
+        function handleSubmit() {
+            const valor = input.value;
+            
+            // Desabilitar input
+            input.disabled = true;
+            input.style.borderBottomColor = 'var(--success)';
+            input.style.opacity = '0.7';
+            
+            // Mostrar o valor digitado como linha de output
+            const valueLine = document.createElement('div');
+            valueLine.className = 'console-line output';
+            valueLine.innerHTML = `<span style="color: var(--text-muted)">➜ ${escapeHtml(valor)}</span>`;
+            consoleOutput.appendChild(valueLine);
+            
+            isWaitingInput = false;
+            inputResolve = null;
+            
+            resolve(valor);
+        }
+
+        // Event listeners
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit();
+            }
+        });
+
+        // Se perder foco, voltar foco (exceto se clicar em outro lugar da IDE)
+        input.addEventListener('blur', () => {
+            if (isWaitingInput && document.activeElement !== codeEditor) {
+                setTimeout(() => input.focus(), 10);
+            }
+        });
+    });
+}
+
+// ============================================
+// EXECUÇÃO DO CÓDIGO
+// ============================================
+
+async function runCode() {
     const code = codeEditor.value;
     if (!code.trim()) {
         showConsoleMessage('Digite algum código para executar!', 'error');
         return;
     }
 
+    // Se já estiver esperando input, não executar
+    if (isWaitingInput) {
+        showStatus('Aguardando input...', 'warning');
+        return;
+    }
+
     // Limpar console
     consoleOutput.innerHTML = '';
+    showStatus('Executando...', 'info');
 
-    // Executar
-    const outputLines = [];
+    // Callback de output
     const outputCallback = (value) => {
-        outputLines.push(value);
         addConsoleLine(value, 'output');
     };
 
-    const result = compiler.execute(code, outputCallback);
+    try {
+        const result = await compiler.execute(code, outputCallback, inputCallback);
 
-    if (!result.success) {
-        result.errors.forEach(err => addConsoleLine(err, 'error'));
-        showStatus('Erro na execução', 'error');
-    } else {
-        showStatus('Execução concluída', 'success');
+        if (!result.success) {
+            result.errors.forEach(err => addConsoleLine(err, 'error'));
+            showStatus('Erro na execução', 'error');
+        } else {
+            showStatus('Execução concluída', 'success');
 
-        // Atualizar painéis
-        updateTokensPanel(result.tokens);
-        updateAstPanel(result.ast);
+            // Atualizar painéis
+            updateTokensPanel(result.tokens);
+            updateAstPanel(result.ast);
 
-        // Atualizar contador
-        tokenCount.innerHTML = `<i class="fas fa-coins"></i> ${result.tokens.length - 1} tokens`;
+            // Atualizar contador
+            tokenCount.innerHTML = `<i class="fas fa-coins"></i> ${result.tokens.length - 1} tokens`;
+        }
+    } catch (e) {
+        addConsoleLine(`Erro inesperado: ${e.message}`, 'error');
+        showStatus('Erro fatal', 'error');
+        isWaitingInput = false;
+        inputResolve = null;
     }
 }
 
@@ -341,6 +521,16 @@ function renderAstNode(node, level = 0) {
             <span class="ast-node-type">Exibir</span>
             <span class="ast-node-value">${formatNodeValue(node.expressao)}</span>
         </div>`;
+    } else if (node.tipo === 'Ler') {
+        content = `<div class="ast-node" style="margin-left: ${level * 20}px">
+            <span class="ast-node-type">Ler</span>
+            <span class="ast-node-value">${node.mensagem ? formatNodeValue(node.mensagem) : ''}</span>
+        </div>`;
+    } else if (node.tipo === 'ConsultaPlaneta') {
+        content = `<div class="ast-node" style="margin-left: ${level * 20}px">
+            <span class="ast-node-type">ConsultaPlaneta</span>
+            <span class="ast-node-value">${formatNodeValue(node.nome)}</span>
+        </div>`;
     } else if (node.tipo === 'Se') {
         content = `<div class="ast-node">
             <div class="ast-node-header" onclick="toggleNode(this)">
@@ -395,6 +585,8 @@ function formatNodeValue(node) {
     }
     if (node.tipo === 'Variavel') return node.nome;
     if (node.tipo === 'BinOp') return `(${formatNodeValue(node.esquerda)} ${node.operador.valor || node.operador.tipo} ${formatNodeValue(node.direita)})`;
+    if (node.tipo === 'Ler') return node.mensagem ? `ler(${formatNodeValue(node.mensagem)})` : 'ler()';
+    if (node.tipo === 'ConsultaPlaneta') return `nebula exibir ${formatNodeValue(node.nome)}`;
     return node.tipo;
 }
 
@@ -441,6 +633,13 @@ function switchPanel(panel) {
 
 // Limpar tudo
 function clearAll() {
+    // Cancelar input pendente se houver
+    if (isWaitingInput && inputResolve) {
+        inputResolve('');
+        isWaitingInput = false;
+        inputResolve = null;
+    }
+
     codeEditor.value = '';
     consoleOutput.innerHTML = `
         <div class="console-welcome">
@@ -468,11 +667,10 @@ function copyCode() {
 
 // Mostrar status
 function showStatus(message, type) {
-    const statusBar = document.querySelector('.status-bar');
     const statusLeft = document.querySelector('.status-left');
 
-    const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
-    const color = type === 'success' ? '#89d185' : type === 'error' ? '#f14c4c' : '#3794ff';
+    const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'clock' : 'info-circle';
+    const color = type === 'success' ? '#89d185' : type === 'error' ? '#f14c4c' : type === 'warning' ? '#cca700' : '#3794ff';
 
     statusLeft.innerHTML = `
         <span class="status-item" style="color: ${color}">
@@ -480,12 +678,14 @@ function showStatus(message, type) {
         </span>
     `;
 
-    setTimeout(() => {
-        statusLeft.innerHTML = `
-            <span class="status-item"><i class="fas fa-check-circle"></i> Pronto</span>
-            <span class="status-item" id="tokenCount"><i class="fas fa-coins"></i> 0 tokens</span>
-        `;
-    }, 3000);
+    if (type !== 'warning') {
+        setTimeout(() => {
+            statusLeft.innerHTML = `
+                <span class="status-item"><i class="fas fa-check-circle"></i> Pronto</span>
+                <span class="status-item" id="tokenCount"><i class="fas fa-coins"></i> 0 tokens</span>
+            `;
+        }, 3000);
+    }
 }
 
 // Utilitários

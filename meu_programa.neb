@@ -1,4 +1,0 @@
-// Faça testes aqui de acordo com a documentação nebula_ler_aqui.pdf
-// se instalar a extensão  - vscode-pdf você consegue ler dentro do vs code
-
-exibir("Ola, Mundo!");
