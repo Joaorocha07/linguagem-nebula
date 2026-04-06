@@ -165,6 +165,7 @@ exibir("Programa finalizado!");`
 };
 
 // Documentação
+// Documentação
 const documentation = {
     variables: {
         title: 'Variáveis',
@@ -249,7 +250,90 @@ nebula exibir planeta;</code></pre>
                 <p>Planetas disponíveis: Mercurio, Venus, Terra, Marte, Jupiter, Saturno, Urano, Netuno</p>
             </div>
         `
-    }
+    },
+    database: {
+        title: 'Banco de Dados Nebula',
+        content: `
+            <div class="doc-section">
+                <h3>🌌 Comando nebula</h3>
+                <p>O comando <code>nebula</code> permite consultar informações astronômicas do banco de dados SQLite integrado.</p>
+                
+                <h3>Sintaxe</h3>
+                <pre><code>// Consultar planeta específico
+nebula exibir "NomeDoPlaneta";
+
+// Usando variável
+criar planeta = "Terra";
+nebula exibir planeta;</code></pre>
+
+                <h3>🪐 Planetas Disponíveis</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0;">
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-orange);">Mercurio</strong><br>
+                        <small>Planeta Rochoso • 57.9 milhões km</small>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-yellow);">Venus</strong><br>
+                        <small>Planeta Rochoso • 108.2 milhões km</small>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-blue);">Terra</strong><br>
+                        <small>Planeta Rochoso • 149.6 milhões km</small>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-red);">Marte</strong><br>
+                        <small>Planeta Rochoso • 227.9 milhões km</small>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-orange);">Jupiter</strong><br>
+                        <small>Planeta Gasoso • 778.5 milhões km</small>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-yellow);">Saturno</strong><br>
+                        <small>Planeta Gasoso • 1.434 milhões km</small>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-cyan);">Urano</strong><br>
+                        <small>Planeta Gasoso • 2.871 milhões km</small>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 4px;">
+                        <strong style="color: var(--accent-blue);">Netuno</strong><br>
+                        <small>Planeta Gasoso • 4.495 milhões km</small>
+                    </div>
+                </div>
+
+                <h3>📊 Dados Retornados</h3>
+                <p>Para cada planeta, o sistema exibe:</p>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Nome</strong> - Nome do planeta</li>
+                    <li><strong>Tipo</strong> - Rochoso ou Gasoso</li>
+                    <li><strong>Distância do Sol</strong> - Em milhões de km</li>
+                    <li><strong>Diâmetro</strong> - Em km</li>
+                    <li><strong>Massa</strong> - Em kg (notação científica)</li>
+                    <li><strong>Luas</strong> - Quantidade de luas naturais</li>
+                    <li><strong>Ano orbital</strong> - Dias terrestres</li>
+                    <li><strong>Temperatura média</strong> - Em °C</li>
+                    <li><strong>Observação</strong> - Curiosidade especial</li>
+                </ul>
+
+                <h3>💡 Exemplo Completo</h3>
+                <pre><code>// Sistema de consulta interativo
+exibir("=== SISTEMA NEBULA ===");
+
+// Consulta direta
+nebula exibir "Terra";
+
+// Usando variável com input
+criar planeta = ler("Digite um planeta: ");
+nebula exibir planeta;</code></pre>
+
+                <h3>⚠️ Dicas</h3>
+                <p>• A busca é <strong>case-insensitive</strong> ("terra", "Terra", "TERRA" funcionam)</p>
+                <p>• Se o planeta não for encontrado, o sistema lista os disponíveis</p>
+                <p>• Use com loops e condicionais para criar menus interativos</p>
+            </div>
+        `
+    },
 };
 
 // Atualizar números de linha
