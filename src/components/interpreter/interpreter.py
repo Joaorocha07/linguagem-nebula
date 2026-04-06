@@ -4,27 +4,38 @@ Executa a AST gerada pelo parser.
 """
 
 from typing import Any, Dict, List
+import sqlite3
+from pathlib import Path
 from src.components.lexer.tokens import TipoToken
 from src.components.nebula_ast.nodes import *
+from src.components.parser.parser import ConsultaPlaneta
 
 
 class ErroExecucao(Exception):
-    """Exceção para erros em tempo de execução."""
     pass
-
 
 class Interpretador:
     """Interpretador que executa a AST."""
 
-    def __init__(self):
+    def __init__(self, banco_db: str = "nebula.db"):
         self.variaveis: Dict[str, Any] = {}
         self.escopos: List[Dict[str, Any]] = [self.variaveis]
+        self.banco_db = banco_db
+        self.verificar_banco()
+
+    def verificar_banco(self) -> None:
+        """Verifica se o banco de dados existe."""
+        if not Path(self.banco_db).exists():
+            raise ErroExecucao(f"Banco de dados '{self.banco_db}' não encontrado. Execute primeiro o script de criação.")
 
     def executar(self, node: ASTNode) -> Any:
         """Método principal de execução - dispacha para o método específico."""
         method_name = f'_executar_{type(node).__name__}'
         method = getattr(self, method_name, self._executar_generico)
         return method(node)
+    
+    def conectar(self) -> sqlite3.Connection:
+        return sqlite3.connect(self.banco_db)
 
     def _executar_generico(self, node: ASTNode):
         raise ErroExecucao(f"Tipo de nó não suportado: {type(node)}")
@@ -156,3 +167,62 @@ class Interpretador:
         valor = self.executar(node.expressao)
         print(valor)
         return valor
+    
+    def _executar_Ler(self, node: Ler) -> str:
+        """Executa leitura de entrada do usuário."""
+        # Exibe mensagem se houver
+        if node.mensagem:
+            print(node.mensagem.valor, end="")
+        else:
+            print("> ", end="")
+        
+        # Lê entrada do usuário
+        try:
+            valor = input()
+            return valor
+        except EOFError:
+            return ""
+
+    def _executar_ConsultaPlaneta(self, node: 'ConsultaPlaneta'):
+        """Executa consulta ao banco de dados de planetas."""
+        valor_nome = self.executar(node.nome)
+        nome_planeta = str(valor_nome)
+        
+        with self.conectar() as conexao:
+            cursor = conexao.cursor()
+            
+            # Busca case-insensitive
+            cursor.execute("""
+                SELECT nome, tipo, distancia_sol, diametro, massa, 
+                       luas, ano_orbital, temperatura_media, observacao
+                FROM planetas
+                WHERE LOWER(nome) = LOWER(?)
+            """, (nome_planeta,))
+            
+            resultado = cursor.fetchone()
+            
+            if resultado is None:
+                print(f"❌ Planeta '{nome_planeta}' não encontrado no banco de dados Nebula.")
+                print("💡 Planetas disponíveis: Mercúrio, Vênus, Terra, Marte, Júpiter, Saturno, Urano, Netuno")
+                return None
+            
+            nome, tipo, distancia, diametro, massa, luas, ano, temp, observacao = resultado
+            
+            # Formatação bonita da saída
+            print("\n" + "=" * 70)
+            print(f"  🪐  {nome.upper()}")
+            print("=" * 70)
+            print(f"  📊 Tipo: {tipo}")
+            print(f"  🌞 Distância do Sol: {distancia} milhões de km")
+            print(f"  📏 Diâmetro: {diametro:,} km")
+            print(f"  ⚖️  Massa: {massa}")
+            print(f"  🌙 Luas: {luas}")
+            print(f"  🗓️  Ano orbital: {ano} dias terrestres")
+            print(f"  🌡️  Temperatura média: {temp}°C")
+            print("-" * 70)
+            print(f"  💡 Observação:")
+            print(f"     {observacao}")
+            print("=" * 70 + "\n")
+            
+            return nome
+        

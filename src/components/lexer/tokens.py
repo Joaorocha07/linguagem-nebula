@@ -18,6 +18,7 @@ class TipoToken(Enum):
     DEFINIR = auto()    # def/função
     RETORNAR = auto()   # return
     EXIBIR = auto()     # print/output
+    LER = auto()        # input/entrada
 
     # Tipos
     NUMERO_INTEIRO = auto()
@@ -58,6 +59,8 @@ class TipoToken(Enum):
     FECHA_PARENTESES = auto()   # )
     INICIO = auto()             # inicio
     FIM = auto()                # fim
+
+    NEBULA = auto()      # nebula - comando de consulta ao banco
 
     # Fim de arquivo
     EOF = auto()

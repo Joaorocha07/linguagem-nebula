@@ -1,0 +1,36 @@
+// ============================================
+// SISTEMA DE CONSULTA ASTRONOMICA NEBULA
+// ============================================
+// Menu interativo com entrada do usuário
+
+exibir("");
+exibir("╔════════════════════════════════════════════════════════════╗");
+exibir("║     🌌  SISTEMA DE CONSULTA ASTRONOMICA NEBULA  🌌       ║");
+exibir("╚════════════════════════════════════════════════════════════╝");
+exibir("");
+
+// Exibe o menu
+exibir(">>> PLANETAS DISPONIVEIS:");
+exibir("   Mercurio, Venus, Terra, Marte, Jupiter, Saturno, Urano, Netuno");
+exibir("");
+
+// Loop principal do menu
+criar continuar = verdadeiro;
+
+enquanto (continuar) inicio
+    exibir("");
+    criar planeta = ler("Digite o nome do planeta (ou 'sair' para encerrar): ");
+    
+    se (planeta == "sair") inicio
+        continuar = falso;
+        exibir("Encerrando sistema...");
+    fim
+    senao inicio
+        exibir("");
+        exibir(">>> Consultando informacoes sobre " + planeta + "...");
+        nebula exibir planeta;
+    fim
+fim
+
+exibir("");
+exibir("Obrigado por usar o Sistema Nebula!");

@@ -1,9 +1,5 @@
-"""
-Analisador Sintático (Parser) para a linguagem Nebula.
-Converte tokens em uma Árvore de Sintaxe Abstrata (AST).
-"""
-
 from typing import List, Optional
+from dataclasses import dataclass
 from src.components.lexer.tokens import TipoToken, Token
 from src.components.nebula_ast.nodes import *
 
@@ -16,6 +12,11 @@ class ErroSintatico(Exception):
         self.coluna = coluna
         super().__init__(f"Erro sintático na linha {linha}, coluna {coluna}: {mensagem}")
 
+@dataclass
+class ConsultaPlaneta(ASTNode):
+    nome: ASTNode
+    def __repr__(self):
+        return f"ConsultaPlaneta({self.nome})"
 
 class Parser:
     """Analisador sintático recursivo descendente."""
@@ -24,6 +25,28 @@ class Parser:
         self.tokens = tokens
         self.pos = 0
         self.erros: List[str] = []
+        self.palavras_chave = {'nebula': TipoToken.NEBULA}
+        
+    def _parse_nebula(self) -> ConsultaPlaneta:
+        self._esperar(TipoToken.NEBULA)
+        self._esperar(TipoToken.EXIBIR)
+        
+        token = self._atual()
+        
+        if token.tipo == TipoToken.STRING:
+            nome_planeta = String(token.valor)
+            self._avancar()
+        elif token.tipo == TipoToken.IDENTIFICADOR:
+            nome_planeta = Variavel(token.valor)
+            self._avancar()
+        else:
+            raise ErroSintatico(
+                f"Esperado nome do planeta (string ou variável), encontrado {token.tipo.name}",
+                token.linha, token.coluna
+            )
+        
+        self._esperar(TipoToken.PONTO_VIRGULA)
+        return ConsultaPlaneta(nome_planeta)
 
     def _atual(self) -> Token:
         if self.pos < len(self.tokens):
@@ -49,7 +72,6 @@ class Parser:
             self._avancar()
 
     def parse(self) -> Programa:
-        """Inicia a análise sintática."""
         statements = []
         while self._atual().tipo != TipoToken.EOF:
             try:
@@ -68,18 +90,26 @@ class Parser:
     def _parse_statement(self) -> Optional[ASTNode]:
         token = self._atual()
 
-        if token.tipo == TipoToken.CRIAR:
+        if token.tipo in (TipoToken.FIM, TipoToken.SENAO, TipoToken.EOF):
+            return None
+
+        # Comando nebula (consulta a planetas)
+        if token.tipo == TipoToken.NEBULA:
+            return self._parse_nebula()
+        elif token.tipo == TipoToken.CRIAR:
             return self._parse_declaracao()
         elif token.tipo == TipoToken.SE:
             return self._parse_se()
         elif token.tipo == TipoToken.ENQUANTO:
             return self._parse_enquanto()
         elif token.tipo == TipoToken.EXIBIR:
-            return self._parse_exibir()
+            return self._parse_exibir()   
         elif token.tipo == TipoToken.IDENTIFICADOR:
             return self._parse_atribuicao_ou_chamada()
         elif token.tipo == TipoToken.INICIO:
             return self._parse_bloco()
+        elif token.tipo == TipoToken.LER:
+            return self._parse_ler()
         elif token.tipo == TipoToken.PONTO_VIRGULA:
             self._avancar()
             return None
@@ -268,7 +298,44 @@ class Parser:
             self._esperar(TipoToken.FECHA_PARENTESES)
             return node
 
+        # ✅ CORREÇÃO: Adicionar suporte a LER como expressão primária
+        if token.tipo == TipoToken.LER:
+            return self._parse_ler_como_expressao()
+
         raise ErroSintatico(
             f"Expressão inesperada: {token.tipo.name}",
             token.linha, token.coluna
         )
+    
+    def _parse_ler(self) -> Ler:
+        self._esperar(TipoToken.LER)
+        
+        mensagem = None
+        if self._atual().tipo == TipoToken.ABRE_PARENTESES:
+            self._esperar(TipoToken.ABRE_PARENTESES)
+            
+            # Se tiver uma string, usa como mensagem
+            if self._atual().tipo == TipoToken.STRING:
+                mensagem = String(self._atual().valor)
+                self._avancar()
+            
+            self._esperar(TipoToken.FECHA_PARENTESES)
+        
+        self._esperar(TipoToken.PONTO_VIRGULA)
+        return Ler(mensagem)
+
+    def _parse_ler_como_expressao(self) -> Ler:
+        self._esperar(TipoToken.LER)
+        
+        mensagem = None
+
+        if self._atual().tipo == TipoToken.ABRE_PARENTESES:
+            self._esperar(TipoToken.ABRE_PARENTESES)
+            
+            if self._atual().tipo == TipoToken.STRING:
+                mensagem = String(self._atual().valor)
+                self._avancar()
+            
+            self._esperar(TipoToken.FECHA_PARENTESES)
+        
+        return Ler(mensagem)

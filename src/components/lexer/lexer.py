@@ -26,11 +26,14 @@ class AnalisadorLexico:
             'definir': TipoToken.DEFINIR,
             'retornar': TipoToken.RETORNAR,
             'exibir': TipoToken.EXIBIR,
+            'ler': TipoToken.LER,
             'inicio': TipoToken.INICIO,
             'fim': TipoToken.FIM,
             'verdadeiro': (TipoToken.BOOLEANO, True),
             'falso': (TipoToken.BOOLEANO, False),
         }
+
+        self.palavras_chave['nebula'] = TipoToken.NEBULA
 
     def _caractere_atual(self) -> Optional[str]:
         if self.pos >= len(self.codigo):

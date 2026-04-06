@@ -25,6 +25,13 @@ class String(ASTNode):
     def __repr__(self):
         return f"String('{self.valor}')"
 
+@dataclass
+class Ler(ASTNode):
+    mensagem: Optional['String'] = None
+    def __repr__(self):
+        if self.mensagem:
+            return f"Ler('{self.mensagem.valor}')"
+        return "Ler()"
 
 @dataclass
 class Booleano(ASTNode):
@@ -72,7 +79,6 @@ class Declaracao(ASTNode):
     def __repr__(self):
         return f"Declaracao({self.nome}, {self.valor})"
 
-
 @dataclass
 class Se(ASTNode):
     condicao: ASTNode
@@ -102,3 +108,4 @@ class Programa(ASTNode):
     statements: List[ASTNode]
     def __repr__(self):
         return f"Programa({len(self.statements)} stmts)"
+    
